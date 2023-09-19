@@ -1,0 +1,140 @@
+Sub VBA_Challenge()
+
+    'ensure it is looped through all of our worksheets
+
+    For Each ws In ThisWorkbook.Worksheets
+    
+
+        ' define all variables
+        
+        Dim ticker As String
+        Dim opening_price As Double
+        Dim closing_price As Double
+        Dim yearly_change As Double
+        Dim lastrow As Double
+        
+        Dim percentage_change As Double
+        Dim total_volume As Double
+        Dim greatest_increase As Double
+        Dim greatest_decrease As Double
+        Dim greatest_volume As Double
+        
+        Dim greatest_increase_ticker As String
+        Dim greatest_decrease_ticker As String
+        Dim greatest_totalvolume_ticker As String
+        
+        ' initialize variables that need to be
+        
+        yearly_change = 0
+        percentage_change = 0
+        total_volume = 0
+        greatest_increase = 0
+        greatest_decrease = 0
+        greatest_volume = 0
+        greatest_totalvolume_ticker = ""
+        greatest_increase_ticker = ""
+        greatest_decrease_ticker = ""
+        
+        
+        'create headers
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Yearly Change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+        ws.Range("P1").Value = "Ticker"
+        ws.Range("Q1").Value = "Value"
+        
+        'find the last rows in the worksheets
+        
+        lastrow = ws.Cells(Rows.Count, "A").End(xlUp).Row
+        
+        opening_price = ws.Cells(2, "C").Value
+         
+        Dim summary_row As Long
+        summary_row = 2
+        
+        ' create loop
+        
+        For i = 2 To lastrow
+        
+            If ws.Cells(i + 1, "A").Value = ws.Cells(i, "A").Value Then
+                total_volume = total_volume + ws.Cells(i, "G").Value
+            Else
+                total_volume = total_volume + ws.Cells(i, "G").Value
+                ticker = ws.Cells(i, "A").Value ' check what the ticker is for the row & set the ticker
+                
+                closing_price = ws.Cells(i, 6).Value
+                yearly_change = closing_price - opening_price 'calculate the yearly change
+               
+                
+            
+                If opening_price <> 0 Then
+                    percentage_change = (yearly_change / opening_price) * 100 'find the percentage of the change
+                Else
+                    percentage_change = 0 'clarify what happens if there is no change
+                End If
+                
+                If percentage_change > greatest_increase Then
+                    greatest_increase = percentage_change
+                    greatest_increase_ticker = ticker
+                End If
+                    
+                If percentage_change < greatest_decrease Then
+                    greatest_decrease = percentage_change
+                    greatest_decrease_ticker = ticker
+                End If
+                    
+                If total_volume > greatest_volume Then
+                    greatest_volume = total_volume
+                    greatest_totalvolume_ticker = ticker
+                End If
+                
+            ' add data created to summary table - Ticker, Yearly Change, Total volume & Percentage Change
+                
+                ws.Cells(summary_row, "I").Value = ticker
+                ws.Cells(summary_row, "J").Value = yearly_change
+                ws.Cells(summary_row, "K").Value = "%" & percentage_change
+                ws.Cells(summary_row, "L").Value = total_volume
+    
+            ' color the summary table - Yearly Change
+            
+                If yearly_change > 0 Then
+                        ws.Cells(summary_row, "J").Interior.ColorIndex = 4
+                    ElseIf yearly_change <= 0 Then
+                        ws.Cells(summary_row, "J").Interior.ColorIndex = 3
+                End If
+                
+                'reset alll the values for the next worksheet
+                total_volume = 0
+                opening_price = ws.Cells(i + 1, "C").Value
+                summary_row = summary_row + 1
+                
+            
+            End If
+        
+        Next i
+        
+        'find the results for each of the greatests
+        ws.Cells(2, "O").Value = "Greates % Increase"
+        ws.Cells(3, "O").Value = "Greatest % Decrease"
+        ws.Cells(4, "O").Value = "Greatest Total Volume"
+         
+        ws.Cells(2, "P").Value = greatest_increase_ticker
+        ws.Cells(2, "Q").Value = greatest_increase
+        ws.Range("Q2").NumberFormat = "0.00%"
+        
+        ws.Cells(3, "P").Value = greatest_decrease_ticker
+        ws.Cells(3, "Q").Value = greatest_decrease
+        ws.Range("Q3").NumberFormat = "0.00%"
+            
+        ws.Cells(4, "P").Value = greatest_totalvolume_ticker
+        ws.Cells(4, "Q").Value = greatest_volume
+           
+        Columns("I:Q").AutoFit
+
+    Next ws
+
+    MsgBox ("complete")
+    
+
+End Sub
